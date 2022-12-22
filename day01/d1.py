@@ -4,24 +4,31 @@ from typing import Tuple, List
 from helpers import helper
 
 
-def calculate_totals(parsed_calories: List[list]):
+def calculate_totals(parsed_calories: List[list], limit: int = 1):
     group_sums = list([group[-1] for group in parsed_calories])
     total = max(group_sums)
     ind = group_sums.index(total)
     return ind, total
 
 
-def run(input) -> Tuple:
+def run(input, limit: int = 1) -> Tuple:
     calorie_list = helper.parse_file(input)
 
     if not calorie_list:
         print("There are no calories to parse!", file=sys.stderr)
 
+    # [[1,2,3,6], [4,4], [5,6,11]]
     parsed_calories = parse_calorie_list(calorie_list)
 
-    elf, calories = calculate_totals(parsed_calories)
-    print(f"The elf is: {elf + 1} with the total calorie count of: {calories}")
-    return elf + 1, calories
+    elves, total_calories = [], 0
+    for i in range(0, limit):
+        elf, calories = calculate_totals(parsed_calories)
+        elves.append(elf + 1)
+        total_calories += calories
+        parsed_calories[elf] = [-1]
+
+    print(f"The elves are: {','.join(map(str, elves))} with the total calorie count of: {total_calories}")
+    return elves, total_calories
 
 
 def parse_calorie_list(calories: list) -> List[list]:
@@ -49,4 +56,11 @@ def parse_calorie_list(calories: list) -> List[list]:
 
 if __name__ == '__main__':
     input_path = input("Enter the file path: ")
-    run(input_path)
+    top_num = input("How many calories do you want to get? (default: 1): ") or 1
+    if isinstance(top_num, str):
+        try:
+            top_num = int(top_num)
+        except ValueError:
+            top_num = 1
+
+    run(input_path, limit=top_num)
